@@ -1,29 +1,61 @@
-use std::env;
-use rocket::{Build, Rocket, routes, get, launch};
+use std::net::SocketAddr;
+use axum::{http::StatusCode, response::IntoResponse, routing::{get, post}, Json, Router};
+use serde::{Deserialize, Serialize};
+use clap::Parser;
+use sp_web::config::log;
 
-#[rocket::main]
-async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    // 开启 cmd 的 AlwaysAnsi 功能
-    if env::consts::OS == "windows" {
-        ansi_term::enable_ansi_support().unwrap();
-    }
+/// Rust简单web服务
+#[derive(Parser, Debug, Deserialize, Serialize)]
+struct Args {
+    /// 端口号
+    #[arg(short, long, default_value_t = 3000)]
+    port: u16,
+}
 
-    rocket::build().mount("/", routes![hello, bye]).launch().await?;
-    Ok(())
+#[tokio::main]
+async fn main() {
+    let args = Args::parse();
+    let _guard = log::init_log();
+
+    let app = Router::new()
+        .route("/", get(root))
+        .route("/users", post(create_user));
+
+    let addr = SocketAddr::from(([127, 0, 0, 1], args.port));
+    tracing::warn!("listening on {addr}");
+    axum::Server::bind(&addr).serve(app.into_make_service()).await.unwrap();
 }
 
 
-#[get("/hello")]
-async fn hello() -> String {
-    "Hello, world!".to_string()
+async fn handle_error(_: std::io::Error) -> impl IntoResponse {
+    (
+        StatusCode::INTERNAL_SERVER_ERROR,
+        "Something went wrong...",
+    )
 }
 
-#[get("/bye")]
-async fn bye() -> String {
-    "bye!".to_string()
+async fn root() -> &'static str {
+    "Hello, World!"
 }
 
-// #[launch]
-// fn rocket() -> Rocket<Build> {
-//     rocket::build().mount("/", routes![hello, bye])
-// }
+async fn create_user(
+    Json(payload): Json<CreateUser>,
+) -> impl IntoResponse {
+    let user = User {
+        id: 1337,
+        username: payload.username,
+    };
+
+    (StatusCode::CREATED, Json(user))
+}
+
+#[derive(Deserialize)]
+struct CreateUser {
+    username: Option<String>,
+}
+
+#[derive(Serialize)]
+struct User {
+    id: u64,
+    username: Option<String>,
+}
