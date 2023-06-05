@@ -22,12 +22,12 @@ async fn main() {
         .route("/users", post(create_user));
 
     let addr = SocketAddr::from(([127, 0, 0, 1], args.port));
-    tracing::warn!("listening on {addr}");
-    axum::Server::bind(&addr).serve(app.into_make_service()).await.unwrap();
+    tracing::info!("listening on {addr}");
+    let _ = axum::Server::bind(&addr).serve(app.into_make_service()).await;
 }
 
 
-async fn handle_error(_: std::io::Error) -> impl IntoResponse {
+async fn _handle_error(_: std::io::Error) -> impl IntoResponse {
     (
         StatusCode::INTERNAL_SERVER_ERROR,
         "Something went wrong...",
