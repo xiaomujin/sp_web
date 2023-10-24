@@ -7,7 +7,7 @@ use sp_web::config::log;
 /// Rust简单web服务
 #[derive(Parser, Debug, Deserialize, Serialize)]
 struct Args {
-    /// 端口号
+    /// 绑定地址
     #[arg(short, long, default_value = "127.0.0.1:3000")]
     bind: String,
 }
