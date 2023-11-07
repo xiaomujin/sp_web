@@ -30,5 +30,5 @@ async fn main() {
 
 #[handler]
 async fn root() -> &'static str {
-    "Hello, World!"
+    "朱哥nb!"
 }
