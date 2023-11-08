@@ -35,7 +35,7 @@ fn load_config<T>(path: &str) -> Option<T> where T: DeserializeOwned {
 
 #[cfg(test)]
 mod test {
-    use crate::config::init_load_config::load_global_config;
+    use crate::config::global_config::load_global_config;
 
     #[test]
     pub fn load_config_test() {
