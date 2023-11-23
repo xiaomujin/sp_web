@@ -1,4 +1,5 @@
 use anyhow::anyhow;
+use reqwest::header::HeaderValue;
 use salvo::{handler, Request, Response, Router};
 use tokio::fs::OpenOptions;
 use tokio::io::AsyncWriteExt;
@@ -15,7 +16,8 @@ async fn get_file(req: &mut Request, res: &mut Response) {
     let url = req.query::<String>("url").unwrap_or_default();
     let response = reqwest::get(url).await.unwrap();
     // save("1.png", &mut response).await.unwrap();
-    let content_type = response.headers().get("content-type").unwrap();
+    let header_value = HeaderValue::from_str("text/plain").unwrap();
+    let content_type = response.headers().get("content-type").unwrap_or(&header_value);
     res.add_header("content-type", content_type, true).unwrap();
     // res.write_body(response.bytes().await.unwrap()).unwrap();
     let stream = response.bytes_stream();
