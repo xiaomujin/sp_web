@@ -23,10 +23,10 @@ async fn main() {
     let port = args.port.unwrap_or(config.server.port);
     tracing::info!("try on port: {}", port);
     let socket_v4 = SocketAddrV4::new(Ipv4Addr::UNSPECIFIED, port);
-    // let socket_v6 = SocketAddrV6::new(Ipv6Addr::UNSPECIFIED, port, 0, 0);
-    let addr = TcpListener::new(socket_v4).bind().await;
+    let socket_v6 = SocketAddrV6::new(Ipv6Addr::UNSPECIFIED, port, 0, 0);
+    let addr = TcpListener::new(socket_v4).join(TcpListener::new(socket_v6)).bind().await;
+    tracing::info!("listening on port: {}", port);
     let router = controller::init();
     let server = Server::new(addr).serve(router);
-    tracing::info!("listening on port: {}", port);
     server.await;
 }
