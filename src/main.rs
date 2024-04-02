@@ -1,8 +1,8 @@
 use std::net::{Ipv4Addr, Ipv6Addr, SocketAddrV4, SocketAddrV6};
 use serde::{Deserialize, Serialize};
 use clap::Parser;
-use salvo::{Listener, Server};
-use salvo::prelude::TcpListener;
+use salvo::{Listener, Router, Server};
+use salvo::prelude::{TcpListener};
 use sp_web::config::{log};
 use sp_web::constant::app;
 use sp_web::controller;
@@ -21,12 +21,47 @@ async fn main() {
     let _guard = log::init_log();
     let config = &app::GLOBAL_CONFIG;
     let port = args.port.unwrap_or(config.server.port);
-    tracing::info!("try on port: {}", port);
+    // tracing::info!("try on port: {}", port);
+    let router = controller::init();
+    // let server = run_server(port, router);
+    let server = start_server_with_port(port, router);
+    tracing::info!("listening on port: {}", port);
+    server.await;
+}
+
+#[cfg(windows)]
+async fn run_server(port: u16, router: Router) {
     let socket_v4 = SocketAddrV4::new(Ipv4Addr::UNSPECIFIED, port);
     let socket_v6 = SocketAddrV6::new(Ipv6Addr::UNSPECIFIED, port, 0, 0);
     let addr = TcpListener::new(socket_v4).join(TcpListener::new(socket_v6)).bind().await;
-    tracing::info!("listening on port: {}", port);
-    let router = controller::init();
-    let server = Server::new(addr).serve(router);
-    server.await;
+    Server::new(addr).serve(router).await;
+}
+
+#[cfg(not(windows))]
+async fn run_server(port: u16, router: Router) {
+    let socket_v6 = SocketAddrV6::new(Ipv6Addr::UNSPECIFIED, port, 0, 0);
+    let addr = TcpListener::new(socket_v6).bind().await;
+    Server::new(addr).serve(router).await;
+}
+
+async fn start_server_with_port(port: u16, router: Router) {
+    tracing::info!("try on port: {}", port);
+    let socket_v4 = SocketAddrV4::new(Ipv4Addr::UNSPECIFIED, port);
+    let socket_v6 = SocketAddrV6::new(Ipv6Addr::UNSPECIFIED, port, 0, 0);
+    match TcpListener::new(socket_v4).join(TcpListener::new(socket_v6)).try_bind().await {
+        Ok(addr) => {
+            Server::new(addr).serve(router).await;
+        }
+        Err(_) => {
+            match TcpListener::new(socket_v6).try_bind().await {
+                Ok(addr) => {
+                    Server::new(addr).serve(router).await;
+                }
+                Err(_) => {
+                    let addr = TcpListener::new(socket_v4).bind().await;
+                    Server::new(addr).serve(router).await;
+                }
+            }
+        }
+    };
 }
