@@ -22,7 +22,6 @@ async fn main() {
     let _guard = log::init_log();
     let config = &app::GLOBAL_CONFIG;
     let port = args.port.unwrap_or(config.server.port);
-    // tracing::info!("try on port: {}", port);
     let router = controller::init();
     let service = Service::new(router).hoop(Logger::new());
     // let server = run_server(port, router);
