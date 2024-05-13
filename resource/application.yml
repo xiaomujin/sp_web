@@ -14,9 +14,3 @@ mysql:
   pool_max_open: 32
   #连接超时时间单位秒
   timeout_seconds: 15
-
-
-
-snow_flake_id_worker:
-  work_id: 5
-  data_center_id: 3

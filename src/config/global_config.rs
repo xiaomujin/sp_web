@@ -1,28 +1,35 @@
-use crate::config::models::{EnvConfig, GlobalConfig};
+use crate::config::models::GlobalConfig;
+use rust_embed::Embed;
 use schemars::schema::RootSchema;
 use serde::de::DeserializeOwned;
+use std::io::Write;
+use std::path::Path;
+use std::{fs, process};
 
-fn load_env_config() -> Option<EnvConfig> {
-    load_config::<EnvConfig>("application.yml")
-}
+#[derive(Embed)]
+#[folder = "resource"]
+struct Resource;
 
-fn load_global_config_from_env(active: String) -> Option<GlobalConfig> {
-    let path = format!("application-{active}.yml");
-    load_config::<GlobalConfig>(&path)
+fn get_resource(path: &str) -> Option<rust_embed::EmbeddedFile> {
+    Resource::get(path)
 }
 
 pub fn load_global_config() -> Option<GlobalConfig> {
-    if let Some(env_config) = load_env_config() {
-        return load_global_config_from_env(env_config.profiles.active);
-    }
-    None
+    load_config::<GlobalConfig>("application.yml")
 }
 
 fn load_config<T>(path: &str) -> Option<T>
 where
     T: DeserializeOwned,
 {
-    let cfg_str = std::fs::read_to_string(path).expect(&format!("failure read file {path}"));
+    if !Path::new(path).exists() {
+        let in_file = get_resource(path).unwrap();
+        let mut file = fs::File::create(path).expect("create failed");
+        file.write_all(in_file.data.as_ref()).expect("write failed");
+        tracing::info!("{path} 文件已创建，修改后重新启动");
+        process::exit(0x0000);
+    }
+    let cfg_str = fs::read_to_string(path).unwrap_or_else(|e| panic!("{path} {e}"));
     match serde_yaml::from_str::<RootSchema>(&cfg_str) {
         Ok(root_schema) => {
             let data = serde_json::to_string_pretty(&root_schema).expect("");

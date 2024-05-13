@@ -4,7 +4,6 @@ use serde::{Deserialize, Serialize};
 pub struct GlobalConfig {
     pub mysql: Mysql,
     pub server: Server,
-    pub snow_flake_id_worker: SnowFlakeIdWorkerConfig,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -19,20 +18,4 @@ pub struct Mysql {
     pub username: String,
     pub password: String,
     pub db_name: String,
-}
-
-#[derive(Serialize, Deserialize, Debug)]
-pub struct SnowFlakeIdWorkerConfig {
-    pub work_id: u32,
-    pub data_center_id: u32,
-}
-
-#[derive(Serialize, Deserialize, Debug)]
-pub struct Profiles {
-    pub active: String,
-}
-
-#[derive(Serialize, Deserialize, Debug)]
-pub struct EnvConfig {
-    pub profiles: Profiles,
 }
