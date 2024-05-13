@@ -1,10 +1,10 @@
 use time::macros::format_description;
 use tracing_appender::non_blocking::WorkerGuard;
-use tracing_subscriber::{Layer};
 use tracing_subscriber::filter::LevelFilter;
-use tracing_subscriber::fmt::time::{LocalTime};
+use tracing_subscriber::fmt::time::LocalTime;
 use tracing_subscriber::layer::SubscriberExt;
 use tracing_subscriber::util::SubscriberInitExt;
+use tracing_subscriber::Layer;
 
 pub fn init_log() -> WorkerGuard {
     // 如果不是在main函数中，guard必须返回到main()函数中，否则不输出任何信息到日志文件
@@ -21,7 +21,7 @@ pub fn init_log() -> WorkerGuard {
 
     let std_writer = tracing_subscriber::fmt::layer()
         .with_writer(std::io::stdout) // 写入标准输出
-        .with_ansi(true)  // 如果日志是写入文件，应将ansi的颜色输出功能关掉
+        .with_ansi(true) // 如果日志是写入文件，应将ansi的颜色输出功能关掉
         .event_format(format.clone())
         .with_filter(LevelFilter::DEBUG);
 

@@ -1,5 +1,5 @@
-use salvo::{handler, Response, Router};
 use salvo::http::{header, HeaderValue};
+use salvo::{handler, Response, Router};
 use tracing::instrument;
 
 #[instrument]
@@ -9,7 +9,8 @@ pub fn init() -> Router {
 
 #[handler]
 async fn add_header(res: &mut Response) {
-    res.headers_mut().insert(header::SERVER, HeaderValue::from_static("Salvo"));
+    res.headers_mut()
+        .insert(header::SERVER, HeaderValue::from_static("Salvo"));
 }
 
 #[handler]

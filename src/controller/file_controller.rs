@@ -7,13 +7,21 @@ use tracing::instrument;
 
 #[instrument]
 pub fn init() -> Router {
-    Router::with_path("file/<**url>").head(head_file).get(get_file)
+    Router::with_path("file/<**url>")
+        .head(head_file)
+        .get(get_file)
 }
-
 
 #[handler]
 async fn head_file(req: &mut Request, res: &mut Response) {
-    let url = "https://".to_owned() + req.uri().path_and_query().unwrap().to_string().strip_prefix("/file/").unwrap();
+    let url = "https://".to_owned()
+        + req
+            .uri()
+            .path_and_query()
+            .unwrap()
+            .to_string()
+            .strip_prefix("/file/")
+            .unwrap();
     let header_value_str = &get_content_type(url);
     let header_value = HeaderValue::from_str(header_value_str).unwrap();
     res.add_header("content-type", header_value, true).unwrap();
@@ -34,7 +42,14 @@ fn get_content_type(url: String) -> String {
 #[handler]
 async fn get_file(req: &mut Request, res: &mut Response) {
     // let url = req.param::<String>("**url").unwrap_or_default();
-    let url = "https://".to_owned() + req.uri().path_and_query().unwrap().to_string().strip_prefix("/file/").unwrap();
+    let url = "https://".to_owned()
+        + req
+            .uri()
+            .path_and_query()
+            .unwrap()
+            .to_string()
+            .strip_prefix("/file/")
+            .unwrap();
     let header_value_str = &get_content_type(url.to_owned());
     let response = reqwest::get(url).await.unwrap();
     // // save("1.png", &mut response).await.unwrap();
@@ -46,19 +61,26 @@ async fn get_file(req: &mut Request, res: &mut Response) {
     // res.stream(stream);
 }
 
-async fn save(filename: &str, response: &mut reqwest::Response) -> Result<(), Box<dyn std::error::Error>> {
+#[allow(dead_code)]
+async fn save(
+    filename: &str,
+    response: &mut reqwest::Response,
+) -> Result<(), Box<dyn std::error::Error>> {
     let mut options = OpenOptions::new();
     let mut file = options
         .create(true)
         .write(true)
         .truncate(true)
         .open(filename)
-        .await.unwrap();
+        .await
+        .unwrap();
 
     while let Some(chunk) = &response.chunk().await.expect("Failed") {
         match file.write_all(&chunk).await {
             Ok(_) => {}
-            Err(e) => return Err(Box::try_from(anyhow!("File {} save error: {}", filename, e)).unwrap())
+            Err(e) => {
+                return Err(Box::try_from(anyhow!("File {} save error: {}", filename, e)).unwrap())
+            }
         }
     }
     Ok(())

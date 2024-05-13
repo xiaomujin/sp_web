@@ -1,6 +1,6 @@
+use crate::config::models::{EnvConfig, GlobalConfig};
 use schemars::schema::RootSchema;
 use serde::de::DeserializeOwned;
-use crate::config::models::{EnvConfig, GlobalConfig};
 
 fn load_env_config() -> Option<EnvConfig> {
     load_config::<EnvConfig>("application.yml")
@@ -18,7 +18,10 @@ pub fn load_global_config() -> Option<GlobalConfig> {
     None
 }
 
-fn load_config<T>(path: &str) -> Option<T> where T: DeserializeOwned {
+fn load_config<T>(path: &str) -> Option<T>
+where
+    T: DeserializeOwned,
+{
     let cfg_str = std::fs::read_to_string(path).expect(&format!("failure read file {path}"));
     match serde_yaml::from_str::<RootSchema>(&cfg_str) {
         Ok(root_schema) => {
@@ -27,7 +30,7 @@ fn load_config<T>(path: &str) -> Option<T> where T: DeserializeOwned {
             Some(config)
         }
         Err(err) => {
-            tracing::error!("{}",err);
+            tracing::error!("{}", err);
             None
         }
     }

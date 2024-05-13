@@ -1,5 +1,5 @@
-mod root_controller;
 mod file_controller;
+mod root_controller;
 
 use salvo::Router;
 use tracing::instrument;
