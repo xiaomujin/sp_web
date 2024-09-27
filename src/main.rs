@@ -15,7 +15,6 @@ struct Args {
     #[arg(short, long)]
     port: Option<u16>,
 }
-
 #[tokio::main]
 async fn main() {
     let args = Args::parse();
@@ -51,7 +50,7 @@ async fn run_server(port: u16, router: Router) {
 }
 
 async fn start_server_with_port(port: u16, service: Service) {
-    tracing::info!("try on port: {}", port);
+    // tracing::info!("try on port: {}", port);
     let socket_v4 = SocketAddrV4::new(Ipv4Addr::UNSPECIFIED, port);
     let socket_v6 = SocketAddrV6::new(Ipv6Addr::UNSPECIFIED, port, 0, 0);
     match TcpListener::new(socket_v4)
