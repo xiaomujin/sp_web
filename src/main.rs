@@ -1,4 +1,5 @@
 use clap::Parser;
+use rusqlite::{params, Connection};
 use salvo::logging::Logger;
 use salvo::prelude::TcpListener;
 use salvo::{Listener, Router, Server, Service};
@@ -6,6 +7,7 @@ use serde::{Deserialize, Serialize};
 use sp_web::config::log;
 use sp_web::constant::app;
 use sp_web::controller;
+use std::fmt::Debug;
 use std::net::{Ipv4Addr, Ipv6Addr, SocketAddrV4, SocketAddrV6};
 
 /// Rust简单web服务
@@ -26,7 +28,45 @@ async fn main() {
     // let server = run_server(port, router);
     let server = start_server_with_port(port, service);
     tracing::info!("listening on port: {}", port);
+    do_query(config.sqlite.db_name.clone());
     server.await;
+}
+
+fn do_query(db_name: String) {
+    let connection = Connection::open(db_name).unwrap();
+    connection
+        .execute(
+            "CREATE TABLE if not exists person (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name TEXT NOT NULL,
+            age INTEGER
+         )",
+            params![],
+        )
+        .unwrap();
+    // connection
+    //     .execute(
+    //         "INSERT INTO person (name, age) VALUES (?1, ?2)",
+    //         params!["Alice", 32],
+    //     )
+    //     .unwrap();
+    let mut stmt = connection
+        .prepare("SELECT id, name, age FROM person WHERE age > ?")
+        .unwrap();
+    let rows = stmt
+        .query_map(params![20], |row| {
+            Ok((
+                row.get::<_, i64>(0).unwrap(),
+                row.get::<_, String>(1).unwrap(),
+                row.get::<_, i64>(2).unwrap(),
+            ))
+        })
+        .unwrap();
+
+    for row in rows {
+        let (id, name, age) = row.unwrap();
+        tracing::info!("id: {}, name: {}, age: {}", id, name, age);
+    }
 }
 
 #[allow(dead_code)]

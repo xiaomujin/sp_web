@@ -2,7 +2,7 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct GlobalConfig {
-    pub mysql: Mysql,
+    pub sqlite: Sqlite,
     pub server: Server,
 }
 
@@ -12,10 +12,6 @@ pub struct Server {
 }
 
 #[derive(Serialize, Deserialize, Debug)]
-pub struct Mysql {
-    pub host: String,
-    pub port: u16,
-    pub username: String,
-    pub password: String,
+pub struct Sqlite {
     pub db_name: String,
 }
