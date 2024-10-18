@@ -14,8 +14,8 @@ fn get_resource(path: &str) -> Option<rust_embed::EmbeddedFile> {
     Resource::get(path)
 }
 
-pub fn load_global_config() -> Option<GlobalConfig> {
-    load_config::<GlobalConfig>("application.yml")
+pub fn load_global_config() -> GlobalConfig {
+    load_config::<GlobalConfig>("application.yml").unwrap()
 }
 
 fn load_config<T>(path: &str) -> Option<T>
@@ -49,13 +49,6 @@ mod test {
 
     #[test]
     pub fn load_config_test() {
-        match load_global_config() {
-            None => {
-                println!("None");
-            }
-            Some(config) => {
-                println!("{:#?}", config);
-            }
-        }
+        load_global_config();
     }
 }

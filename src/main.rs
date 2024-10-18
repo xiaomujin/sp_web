@@ -21,14 +21,14 @@ struct Args {
 async fn main() {
     let args = Args::parse();
     let _guard = log::init_log();
-    let config = &app::GLOBAL_CONFIG;
-    let port = args.port.unwrap_or(config.server.port);
+    use app::GLOBAL_CONFIG;
+    let port = args.port.unwrap_or(GLOBAL_CONFIG.server.port);
     let router = controller::init();
     let service = Service::new(router).hoop(Logger::new());
     // let server = run_server(port, router);
     let server = start_server_with_port(port, service);
     tracing::info!("listening on port: {}", port);
-    do_query(config.sqlite.db_name.clone());
+    do_query(GLOBAL_CONFIG.sqlite.db_name.clone());
     server.await;
 }
 
