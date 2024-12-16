@@ -13,6 +13,14 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         return Err(format!("protoc executable not found at {}", protoc_path).into());
     }
 
+    // 根据操作系统设置文件权限
+    #[cfg(target_family = "unix")]
+    {
+        use std::os::unix::fs::PermissionsExt;
+        fs::set_permissions(protoc_path, PermissionsExt::from_mode(0o755))
+            .expect("Failed to set permissions for protoc");
+    }
+
     prost_build::Config::new()
         .protoc_executable(&protoc_path)
         .type_attribute(".", "#[derive(serde::Serialize,serde::Deserialize)]")
