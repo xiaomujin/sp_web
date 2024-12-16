@@ -1,5 +1,4 @@
 use clap::Parser;
-use prost::Message;
 use rusqlite::{params, Connection};
 use salvo::logging::Logger;
 use salvo::prelude::TcpListener;
@@ -7,7 +6,7 @@ use salvo::{Listener, Router, Server, Service};
 use serde::{Deserialize, Serialize};
 use sp_web::config::log;
 use sp_web::constant::app;
-use sp_web::{controller, pb};
+use sp_web::controller;
 use std::fmt::Debug;
 use std::net::{Ipv4Addr, Ipv6Addr, SocketAddrV4, SocketAddrV6};
 
@@ -116,7 +115,8 @@ async fn start_server_with_port(port: u16, service: Service) {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
+    use prost::Message;
+    use sp_web::pb;
     use std::time::Instant;
 
     #[test]
