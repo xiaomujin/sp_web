@@ -26,7 +26,7 @@ rusqlite = { version = "0", features = ["bundled"] }
 
 prost = "0"
 # Only necessary if using Protobuf well-known types:
-prost-types = "0"
+#prost-types = "0"
 
 [target.x86_64-unknown-linux-musl.dependencies]
 openssl = { version = "0", features = ["vendored"] }

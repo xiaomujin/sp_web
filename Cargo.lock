@@ -2034,7 +2034,6 @@ dependencies = [
  "openssl-sys",
  "prost",
  "prost-build",
- "prost-types",
  "reqwest",
  "rusqlite",
  "rust-embed",

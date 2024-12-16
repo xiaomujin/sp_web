@@ -1,36 +1,10 @@
-// use std::path::{Path, PathBuf};
-//
-// fn recurse_dir(v: &mut Vec<PathBuf>, dir: impl AsRef<Path>) {
-//     for entry in
-//         std::fs::read_dir(&dir).unwrap_or_else(|_| panic!("Unable to read dir: {:?}", dir.as_ref()))
-//     {
-//         let path = entry.expect("Unable to get directory").path();
-//         if path.is_dir() {
-//             recurse_dir(v, path);
-//         } else if let Some(true) = path.extension().map(|v| v == "proto") {
-//             v.push(path);
-//         }
-//     }
-// }
-//
-// fn main() -> Result<(), Box<dyn std::error::Error>> {
-//     let mut files = Vec::new();
-//     recurse_dir(&mut files, "src/pb");
-//     prost_build::Config::new()
-//         // .out_dir("src/pb")
-//         .protoc_executable("resource/protoc-29.1")
-//         .compile_protos(&files, &["src/pb"])?;
-//     Ok(())
-// }
-
-use std::env;
 use std::fs;
-use std::path::Path;
 use std::io;
+use std::path::Path;
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let proto_dir = env::var("PROTO_DIR").unwrap_or_else(|_| "src/pb".to_string());
-    let protoc_path = env::var("PROTOC_PATH").unwrap_or_else(|_| "resource/protoc-29.1".to_string());
+    let proto_dir = "src/pb";
+    let protoc_path = "resource/protoc-29.1";
 
     let mut files = Vec::new();
     recurse_dir(&mut files, &proto_dir)?;
@@ -41,6 +15,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     prost_build::Config::new()
         .protoc_executable(&protoc_path)
+        .type_attribute(".", "#[derive(serde::Serialize,serde::Deserialize)]")
         .compile_protos(&files, &[&proto_dir])?;
 
     Ok(())
@@ -58,4 +33,3 @@ fn recurse_dir(files: &mut Vec<String>, dir: &str) -> io::Result<()> {
     }
     Ok(())
 }
-

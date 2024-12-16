@@ -7,7 +7,6 @@ use salvo::{Listener, Router, Server, Service};
 use serde::{Deserialize, Serialize};
 use sp_web::config::log;
 use sp_web::constant::app;
-use sp_web::pb::person;
 use sp_web::{controller, pb};
 use std::fmt::Debug;
 use std::net::{Ipv4Addr, Ipv6Addr, SocketAddrV4, SocketAddrV6};
@@ -30,16 +29,7 @@ async fn main() {
     // let server = run_server(port, router);
     let server = start_server_with_port(port, service);
     tracing::info!("listening on port: {}", port);
-    // do_query(GLOBAL_CONFIG.sqlite.db_name.clone());
-    // let person = pb::Person {
-    //     name: "Alice".to_string(),
-    //     id: 0,
-    //     email: "".to_string(),
-    //     phones: vec![],
-    // };
-    // let bytes = person.encode_to_vec();
-    // let person2 = pb::Person::decode(&bytes).expect("panic message");
-    // tracing::info!("person2: {}", person2);
+    do_query(GLOBAL_CONFIG.sqlite.db_name.clone());
     server.await;
 }
 
@@ -122,4 +112,40 @@ async fn start_server_with_port(port: u16, service: Service) {
             }
         },
     };
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::time::Instant;
+
+    #[test]
+    fn test_round_trip() {
+        let mut role = pb::Role {
+            item_list: Vec::new(),
+        };
+        let now1 = Instant::now();
+        for i in 0..100000 {
+            let original = pb::Item {
+                id: i,
+                num: 999,
+                level: 99,
+                star: 99,
+            };
+            role.item_list.push(original);
+        }
+        println!("{:?}", now1.elapsed());
+
+        let now2 = Instant::now();
+        let _vec1 = role.encode_to_vec();
+        println!("{:?}", now2.elapsed());
+
+        let now3 = Instant::now();
+        let _role1 = pb::Role::decode(&_vec1[..]).unwrap();
+        println!("{:?}", now3.elapsed());
+
+        let now4 = Instant::now();
+        let _json = serde_json::to_string(&role).unwrap();
+        println!("{:?}", now4.elapsed());
+    }
 }
