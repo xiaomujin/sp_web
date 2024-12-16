@@ -1,4 +1,5 @@
 use clap::Parser;
+use prost::Message;
 use rusqlite::{params, Connection};
 use salvo::logging::Logger;
 use salvo::prelude::TcpListener;
@@ -6,7 +7,8 @@ use salvo::{Listener, Router, Server, Service};
 use serde::{Deserialize, Serialize};
 use sp_web::config::log;
 use sp_web::constant::app;
-use sp_web::controller;
+use sp_web::pb::person;
+use sp_web::{controller, pb};
 use std::fmt::Debug;
 use std::net::{Ipv4Addr, Ipv6Addr, SocketAddrV4, SocketAddrV6};
 
@@ -28,7 +30,16 @@ async fn main() {
     // let server = run_server(port, router);
     let server = start_server_with_port(port, service);
     tracing::info!("listening on port: {}", port);
-    do_query(GLOBAL_CONFIG.sqlite.db_name.clone());
+    // do_query(GLOBAL_CONFIG.sqlite.db_name.clone());
+    // let person = pb::Person {
+    //     name: "Alice".to_string(),
+    //     id: 0,
+    //     email: "".to_string(),
+    //     phones: vec![],
+    // };
+    // let bytes = person.encode_to_vec();
+    // let person2 = pb::Person::decode(&bytes).expect("panic message");
+    // tracing::info!("person2: {}", person2);
     server.await;
 }
 
