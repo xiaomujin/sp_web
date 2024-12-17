@@ -24,7 +24,8 @@ async fn main() {
     use app::GLOBAL_CONFIG;
     let port = args.port.unwrap_or(GLOBAL_CONFIG.server.port);
     let router = controller::init();
-    let service = Service::new(router).hoop(Logger::new());
+    // let service = Service::new(router).hoop(Logger::new());
+    let service = Service::new(router);
     // let server = run_server(port, router);
     let server = start_server_with_port(port, service);
     tracing::info!("listening on port: {}", port);
