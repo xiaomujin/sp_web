@@ -1,0 +1,21 @@
+syntax = "proto3";
+package tutorial;
+
+import "src/pb/schema/itemData.proto";
+
+message RoleData {
+  int32 uid = 1; // 用户唯一ID
+  int32 serverId = 2; // 服务器ID
+  int32 level = 3; // 等级
+  string channel_id = 4; // 渠道ID
+  string ad_channel_id = 5; // 投放渠道ID
+  int32 first_reward = 6; // 首次奖励
+  string nickname = 7; // 昵称
+  int32 avatar = 13; // 头像
+  int32 avatar_frame = 14; // 头像框
+  int32 title = 18; // 称号ID
+  int32 exp = 19; // 玩家等级经验
+  int32 createAt = 21; // 创角时间
+  int32 lastLoginTime = 22; // 上次登录时间
+  repeated ItemData itemList = 23;
+}

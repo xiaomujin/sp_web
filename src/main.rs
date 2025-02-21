@@ -1,14 +1,15 @@
 use clap::Parser;
-use rusqlite::{params, Connection};
+use prost::Message;
+use rusqlite::{Connection, params};
+use salvo::logging::Logger;
 use salvo::prelude::TcpListener;
 use salvo::{Listener, Router, Server, Service};
 use serde::{Deserialize, Serialize};
 use sp_web::config::log;
 use sp_web::constant::app;
-use sp_web::controller;
+use sp_web::{controller, pb};
 use std::fmt::Debug;
 use std::net::{Ipv4Addr, Ipv6Addr, SocketAddrV4, SocketAddrV6};
-use salvo::logging::Logger;
 
 /// Rust简单web服务
 #[derive(Parser, Debug, Deserialize, Serialize)]
@@ -30,6 +31,11 @@ async fn main() {
     let server = start_server_with_port(port, service);
     tracing::info!("listening on port: {}", port);
     do_query(GLOBAL_CONFIG.sqlite.db_name.clone());
+    let mut role_data = pb::RoleData::default();
+    role_data.level = 1;
+    let vec = role_data.encode_to_vec();
+    let data = pb::RoleData::decode(&vec[..]).unwrap();
+    tracing::info!("{}", data.level);
     server.await;
 }
 

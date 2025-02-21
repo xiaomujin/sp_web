@@ -1,0 +1,13 @@
+syntax = "proto3";
+package tutorial;
+
+message ItemData {
+  int32 id = 2;          // ID
+  int32 serverId = 3;    // 服务器ID
+  int32 num = 4;         // 数量
+  bool userLock = 5;     // 用户锁定
+  int32 level = 6;       // 等级
+  int32 star = 7;        // 星级
+  int32 quality = 8;     // 质量
+  int32 ctime = 10;      // 创建时间
+}
