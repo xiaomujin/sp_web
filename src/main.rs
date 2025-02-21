@@ -1,6 +1,5 @@
 use clap::Parser;
 use rusqlite::{params, Connection};
-use salvo::logging::Logger;
 use salvo::prelude::TcpListener;
 use salvo::{Listener, Router, Server, Service};
 use serde::{Deserialize, Serialize};
@@ -9,6 +8,7 @@ use sp_web::constant::app;
 use sp_web::controller;
 use std::fmt::Debug;
 use std::net::{Ipv4Addr, Ipv6Addr, SocketAddrV4, SocketAddrV6};
+use salvo::logging::Logger;
 
 /// Rust简单web服务
 #[derive(Parser, Debug, Deserialize, Serialize)]
@@ -116,37 +116,32 @@ async fn start_server_with_port(port: u16, service: Service) {
 
 #[cfg(test)]
 mod tests {
-    use prost::Message;
-    use sp_web::pb;
-    use std::time::Instant;
+    use tokio::task::JoinSet;
 
-    #[test]
-    fn test_round_trip() {
-        let mut role = pb::Role {
-            item_list: Vec::new(),
-        };
-        let now1 = Instant::now();
-        for i in 0..100000 {
-            let original = pb::Item {
-                id: i,
-                num: 999,
-                level: 99,
-                star: 99,
-            };
-            role.item_list.push(original);
+    #[tokio::test]
+    async fn test_round_trip() {
+        let max_concurrent_requests = 2000; // 设置最大并发请求数量
+        let mut join_set = JoinSet::new();
+
+        for i in 0..20000 {
+            if join_set.len() >= max_concurrent_requests {
+                // 等待至少一个任务完成
+                while join_set.join_next().await.is_some() {}
+            }
+
+            join_set.spawn(async move {
+                match reqwest::get("http://10.0.0.65:8080/game/Test").await {
+                    Ok(response) => {
+                        println!("{}-{}", i, response.text().await.unwrap())
+                    }
+                    Err(e) => {
+                        println!("{}-{}", i, e.to_string())
+                    }
+                }
+            });
         }
-        println!("{:?}", now1.elapsed());
 
-        let now2 = Instant::now();
-        let _vec1 = role.encode_to_vec();
-        println!("{:?}", now2.elapsed());
-
-        let now3 = Instant::now();
-        let _role1 = pb::Role::decode(&_vec1[..]).unwrap();
-        println!("{:?}", now3.elapsed());
-
-        let now4 = Instant::now();
-        let _json = serde_json::to_string(&role).unwrap();
-        println!("{:?}", now4.elapsed());
+        // 等待所有任务完成
+        while join_set.join_next().await.is_some() {}
     }
 }

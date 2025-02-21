@@ -5,7 +5,7 @@ use tracing::instrument;
 
 #[instrument]
 pub fn init() -> Router {
-    Router::with_path("bat/<**url>").get(execute_bat_file)
+    Router::with_path("bat").get(execute_bat_file)
 }
 
 /**

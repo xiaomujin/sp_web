@@ -1,13 +1,13 @@
 use anyhow::anyhow;
 use reqwest::header::HeaderValue;
-use salvo::{handler, Request, Response, Router};
+use salvo::{Request, Response, Router, handler};
 use tokio::fs::OpenOptions;
 use tokio::io::AsyncWriteExt;
 use tracing::instrument;
 
 #[instrument]
 pub fn init() -> Router {
-    Router::with_path("file/<**url>")
+    Router::with_path("file/{**url}")
         .head(head_file)
         .get(get_file)
 }
@@ -41,7 +41,8 @@ fn get_content_type(url: String) -> String {
 
 #[handler]
 async fn get_file(req: &mut Request, res: &mut Response) {
-    // let url = req.param::<String>("**url").unwrap_or_default();
+    let url = req.param::<String>("url").unwrap_or_default();
+    tracing::info!("get_file url: {}", url);
     let url = "https://".to_owned()
         + req
             .uri()
@@ -79,7 +80,7 @@ async fn save(
         match file.write_all(&chunk).await {
             Ok(_) => {}
             Err(e) => {
-                return Err(Box::try_from(anyhow!("File {} save error: {}", filename, e)).unwrap())
+                return Err(Box::try_from(anyhow!("File {} save error: {}", filename, e)).unwrap());
             }
         }
     }
