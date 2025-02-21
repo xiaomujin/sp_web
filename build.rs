@@ -5,9 +5,12 @@ use std::path::Path;
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let proto_dir = ".";
     let protoc_path = "resource/protoc-29.1";
-    
+
     let mut files = Vec::new();
     recurse_dir(&mut files, proto_dir)?;
+    if files.is_empty() {
+        return Ok(());
+    };
 
     if !Path::new(&protoc_path).exists() {
         return Err(format!("protoc executable not found at {}", protoc_path).into());
